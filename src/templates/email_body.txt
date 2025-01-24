@@ -1,0 +1,12 @@
+Hello {name},
+
+The following dates have been recorded as absences:
+{dates_of_absence}
+
+If you have any questions, please contact your reporting manager, {manager_name}.
+
+Ignore if already settled.
+
+Best regards,
+HR Team
+
