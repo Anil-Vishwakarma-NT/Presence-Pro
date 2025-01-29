@@ -1,4 +1,8 @@
 import os
+import sys
+import os
+# Add the parent directory of 'src' to sys.path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 import glob
 import shutil
 import logging
@@ -6,8 +10,7 @@ from datetime import datetime
 from config.config import PROCESSED_FILES_FOLDER, SUBFOLDERS_FOR_UPLOAD_FOLDERS, CONSOLIDATED_FILE_PATH
 from utils.logging_setup import setup_logging
 
-# Initialize logging
-setup_logging()
+ 
  
 
 def load_into_processed_folder():

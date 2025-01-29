@@ -1,13 +1,17 @@
 # Read Files
+import sys
 import os
+# Add the parent directory of 'src' to sys.path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
+ 
 import glob
 import logging
 from utils.common import create_folder, get_processing_excel_file_path
 from config.config import *
 from utils.logging_setup import setup_logging
 
-# Initialize logging
-setup_logging()
+# # # Initialize logging
+# # setup_logging()
 
 def extract_excel_file_path():
     try:

@@ -1,17 +1,35 @@
 import logging
+import os
+import sys
 
-def setup_logging(log_level=logging.INFO, log_format='%(asctime)s - %(levelname)s - %(message)s', log_file=None):
-    # Set the basic configuration for logging
+
+sys.path.append(os.path.abspath('..'))
+
+def setup_logging(log_file):
+    # Ensure logs directory exists
+    if not os.path.exists(os.path.dirname(log_file)):
+        os.makedirs(os.path.dirname(log_file))
+
+    # Reset logging handlers if already configured
+    for handler in logging.root.handlers[:]:
+        logging.root.removeHandler(handler)
+
+    # Configure logging
     logging.basicConfig(
-        level=log_level,
-        format=log_format,
-        filename=log_file,  # If None, logs are sent to the console
-        filemode='a'  # Append mode if logging to a file
+        level=logging.INFO,
+        format='%(asctime)s - %(levelname)s : %(message)s',
+        handlers=[
+            logging.FileHandler(log_file),  # Log to file
+            logging.StreamHandler()  # Log to console
+        ]
     )
 
-    # If log_file is None, add a StreamHandler to output logs to the console
-    if log_file is None:
-        console_handler = logging.StreamHandler()
-        console_handler.setLevel(log_level)
-        console_handler.setFormatter(logging.Formatter(log_format))
-        logging.getLogger().addHandler(console_handler)
+# Define the base directory of the project
+base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+log_file = os.path.join(base_dir, "logs", "pipeline.log")
+print(f"Log file path: {log_file}")
+setup_logging(log_file)
+
+# Test logging
+logger = logging.getLogger(__name__)
+logger.info("Logging setup complete. Test log message.")

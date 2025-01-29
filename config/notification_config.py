@@ -13,7 +13,3 @@ EmailBodyTemplate = "src/templates/email_body.txt"
 
 # [Application]
 SkipRowsEmailFile = "2"
-
-
-#  C:\Users\DELL\Desktop\PRESENCE PRO 2.O\email_detials\employees_email_ID.xlsx
-#  C:\Users\DELL\Desktop\PRESENCE PRO 2.O\src\templates\email_body.txt

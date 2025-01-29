@@ -1,16 +1,19 @@
 import pandas as pd
 import re
+import logging
 from openpyxl import load_workbook
 from openpyxl.styles import Font
 from src.notifications.email_notification import send_email
 from config.notification_config import EmployeeEmailData
 from config.config import CONSOLIDATED_FILE_PATH as consolidated_file_path
+from utils.logging_setup import setup_logging
 
 
-def validate_and_load_data(file_path, header_row=0, engine='openpyxl'):
+ 
+def validate_and_load_data(file_path, header_row = 0, skipfooter_row = 0, engine='openpyxl'):
     try:
         # Load the Excel file into a DataFrame
-        return pd.read_excel(file_path, header=header_row, engine=engine)
+        return pd.read_excel(file_path, header=header_row, skipfooter=skipfooter_row, engine=engine)
     except FileNotFoundError:
         raise FileNotFoundError(f"Error: File not found - {file_path}")
     except Exception as e:
@@ -42,7 +45,7 @@ def transformation(keka_path, indore_biometric_path, raipur_biometric_path, empl
 
     try:
         # Load and preprocess Keka data
-        keka_df = validate_and_load_data(keka_path, header_row=2)
+        keka_df = validate_and_load_data(keka_path, header_row=2,skipfooter_row=26)
         keka_df = preprocess_employee_names(keka_df, 'Employee Name')
     except Exception as e:
         raise Exception(f"Error processing Keka data: {e}")
@@ -68,9 +71,9 @@ def transformation(keka_path, indore_biometric_path, raipur_biometric_path, empl
     
         # Indices in biometrics_df but not in keka_df
     uncommon_indices = biometrics_df.index.difference(keka_df.index)
-    print(f"Number of uncommon employees: {len(uncommon_indices)}")
+    logging.info(f"Number of uncommon employees: {len(uncommon_indices)}")
     # Display the uncommon indices
-    print(uncommon_indices)
+    logging.info(f"Name of uncommon employees: {uncommon_indices}")
     if len(common_employees) == 0:
         raise ValueError("No common employees found between Keka and Biometric data.")
 
@@ -85,7 +88,7 @@ def transformation(keka_path, indore_biometric_path, raipur_biometric_path, empl
     missing_days = set(day_map.values()) - set(biometrics_df.columns.astype(str))
     for col, day in list(day_map.items()):
         if day in missing_days:
-            print(f"Removing date column '{col}' due to missing day '{day}' in Biometric data.")
+            logging.info(f"Removing date column '{col}' due to missing day '{day}' in Biometric data.")
             del day_map[col]
 
     if not day_map:
@@ -111,13 +114,13 @@ def transformation(keka_path, indore_biometric_path, raipur_biometric_path, empl
             if keka_val == 'CO':
                 CO += 1    
 
-            if keka_val == 'A' and biometric_val == 'P':
-                # Update Keka data if biometric shows present but Keka shows absent
-                keka_df.at[employee, keka_date] = 'P'
-                keka_df.at[employee, 'Absent Days'] -= 1
-                keka_df.at[employee, 'Present Days'] += 1
+            # if keka_val == 'A' and biometric_val == 'P':
+            #     # Update Keka data if biometric shows present but Keka shows absent
+            #     keka_df.at[employee, keka_date] = 'P'
+            #     keka_df.at[employee, 'Absent Days'] -= 1
+            #     keka_df.at[employee, 'Present Days'] += 1
 
-            if keka_val == 'A' and biometric_val == 'A':
+            if keka_val == 'A':
                 # Record dates where both systems show absence
                 employee_absent_dates.append(keka_date)
 
@@ -141,9 +144,9 @@ def transformation(keka_path, indore_biometric_path, raipur_biometric_path, empl
                     manager_name=reporting_manager,
                     manager_email=manager_email
                 )
-                print(f"Email sent to {employee}")
+                logging.info(f"Email sent to {employee}")
             else:
-                print(f"{employee} email address does not exist in Email information file")
+                logging.info(f"{employee} email address does not exist in Email information file")
 
 
         # Update workday calculations

@@ -3,15 +3,9 @@ import sys
 import os
 # Add the parent directory of 'src' to sys.path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
-
-import pandas as pd
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-import configparser
-from concurrent.futures import ThreadPoolExecutor, as_completed
-import time
-from retry import retry
 from config.notification_config import *
 
 

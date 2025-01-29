@@ -3,3 +3,13 @@ Processed Files/
 
 # Ignore the upload here folder
 Upload Here/
+
+airflow/logs/
+airflow/airflow.cfg
+airflow/airflow.db
+airflow/webserver_config.py
+
+logs/
+Upload Here/
+Processed Files/
+venv/
