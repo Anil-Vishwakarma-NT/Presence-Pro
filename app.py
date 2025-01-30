@@ -8,10 +8,10 @@ def obtimize_attendance_data():
     
 
     keka_excel_path = excel_file_path_dict["One Keka Excel File"]
-    indore_bio_excel_path = excel_file_path_dict["One Indore Biometric Excel File"]
-    raipur_bio_excel_path = excel_file_path_dict["One Raipur Biometric Excel File"]
+    # indore_bio_excel_path = excel_file_path_dict["One Indore Biometric Excel File"]
+    # raipur_bio_excel_path = excel_file_path_dict["One Raipur Biometric Excel File"]
 
-    transformation(keka_excel_path,indore_bio_excel_path,raipur_bio_excel_path)
+    transformation(keka_excel_path)
 
     load_into_processed_folder()
 
@@ -20,9 +20,9 @@ excel_file_path_dict = extract_excel_file_path()
     
 
 keka_excel_path = excel_file_path_dict["One Keka Excel File"]
-indore_bio_excel_path = excel_file_path_dict["One Indore Biometric Excel File"]
-raipur_bio_excel_path = excel_file_path_dict["One Raipur Biometric Excel File"]
+# indore_bio_excel_path = excel_file_path_dict["One Indore Biometric Excel File"]
+# raipur_bio_excel_path = excel_file_path_dict["One Raipur Biometric Excel File"]
 
-transformation(keka_excel_path,indore_bio_excel_path,raipur_bio_excel_path)
+transformation(keka_excel_path)
 
 load_into_processed_folder()

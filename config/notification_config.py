@@ -9,7 +9,7 @@ SMTPPort = "587"
 SenderEmail = "anilvishwakarma4494@gmail.com"
 SenderPassword = "swup wnrk vdnu qcng"
 EmailSubject = "Absence Notification"
-EmailBodyTemplate = "src/templates/email_body.txt"
+EmailBodyTemplate = "templates/email_body.txt"
 
 # [Application]
 SkipRowsEmailFile = "2"

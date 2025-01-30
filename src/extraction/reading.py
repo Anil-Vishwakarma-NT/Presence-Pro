@@ -16,9 +16,10 @@ from utils.logging_setup import setup_logging
 def extract_excel_file_path():
     try:
         # Step 1: Check and create 'Upload Here' and 'Processed Files' folders if they don't exist
-        logging.info("Creating 'Upload Here' and 'Processed Files' folders if they don't exist.")
+        logging.info("Creating 'Upload Here','Processed Files' and 'email_detials' folders if they don't exist.")
         create_folder(UPLOAD_FOLDER)
         create_folder(PROCESSED_FILES_FOLDER)
+        create_folder(EMAIL_DETAILS_FOLDER)
 
         # Step 2: Check and create subfolders within 'Upload Here'
         logging.info("Creating subfolders within 'Upload Here'.")

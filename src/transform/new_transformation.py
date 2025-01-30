@@ -34,12 +34,12 @@ def handle_duplicates(df, key_column):
 
  
 
-def transformation(keka_path, indore_biometric_path, raipur_biometric_path, employee_email_data_path = EmployeeEmailData):
+def transformation(keka_path, employee_email_data_path = EmployeeEmailData):
     try:
         # Load and preprocess employee email data
         email_info_df = validate_and_load_data(employee_email_data_path, header_row=2)
         preprocess_employee_names(email_info_df, 'Employee Name')
-        email_info_df.set_index('Employee Name', inplace=True)
+        email_info_df.set_index('Employee Number', inplace=True)
     except Exception as e:
         raise Exception(f"Error processing Employee Email data: {e}")
 
@@ -50,32 +50,32 @@ def transformation(keka_path, indore_biometric_path, raipur_biometric_path, empl
     except Exception as e:
         raise Exception(f"Error processing Keka data: {e}")
 
-    try:
-        # Preprocess and merge biometric data
-        biometrics_df = preprocess_and_merge_biometric_data(indore_biometric_path, raipur_biometric_path)
-        biometrics_df = preprocess_employee_names(biometrics_df, 'Employee Name')
-    except Exception as e:
-        raise Exception(f"Error processing biometric data: {e}")
+    # try:
+    #     # Preprocess and merge biometric data
+    #     biometrics_df = preprocess_and_merge_biometric_data(indore_biometric_path, raipur_biometric_path)
+    #     biometrics_df = preprocess_employee_names(biometrics_df, 'Employee Name')
+    # except Exception as e:
+    #     raise Exception(f"Error processing biometric data: {e}")
 
     # Handle duplicate records in Keka and Biometric data
-    keka_df, keka_duplicates = handle_duplicates(keka_df, 'Employee Name')
-    biometrics_df, bio_duplicates = handle_duplicates(biometrics_df, 'Employee Name')
+    keka_df, keka_duplicates = handle_duplicates(keka_df, 'Employee Number')
+    # biometrics_df, bio_duplicates = handle_duplicates(biometrics_df, 'Employee Name')
 
     # Set index for quick lookup
-    keka_df.set_index('Employee Name', inplace=True)
-    biometrics_df.set_index('Employee Name', inplace=True)
+    keka_df.set_index('Employee Number', inplace=True)
+    # biometrics_df.set_index('Employee Name', inplace=True)
 
     # Identify common employees between Keka and Biometric data
-    common_employees = keka_df.index.intersection(biometrics_df.index)
-    print(f"Number of common employees: {len(common_employees)}")
+    # common_employees = keka_df.index.intersection(biometrics_df.index)
+    # print(f"Number of common employees: {len(common_employees)}")
     
         # Indices in biometrics_df but not in keka_df
-    uncommon_indices = biometrics_df.index.difference(keka_df.index)
-    logging.info(f"Number of uncommon employees: {len(uncommon_indices)}")
+    # uncommon_indices = biometrics_df.index.difference(keka_df.index)
+    # logging.info(f"Number of uncommon employees: {len(uncommon_indices)}")
     # Display the uncommon indices
-    logging.info(f"Name of uncommon employees: {uncommon_indices}")
-    if len(common_employees) == 0:
-        raise ValueError("No common employees found between Keka and Biometric data.")
+    # logging.info(f"Name of uncommon employees: {uncommon_indices}")
+    # if len(common_employees) == 0:
+        # raise ValueError("No common employees found between Keka and Biometric data.")
 
     # Identify date columns in Keka data using regex
     date_pattern = re.compile(r'\d{2}-[a-zA-Z]{3}-\d{4}')
@@ -85,31 +85,31 @@ def transformation(keka_path, indore_biometric_path, raipur_biometric_path, empl
 
     # Map Keka date columns to Biometric day numbers
     day_map = {col: str(int(col.split('-')[0])) for col in date_columns}
-    missing_days = set(day_map.values()) - set(biometrics_df.columns.astype(str))
-    for col, day in list(day_map.items()):
-        if day in missing_days:
-            logging.info(f"Removing date column '{col}' due to missing day '{day}' in Biometric data.")
-            del day_map[col]
+    # missing_days = set(day_map.values()) - set(biometrics_df.columns.astype(str))
+    # for col, day in list(day_map.items()):
+    #     if day in missing_days:
+    #         logging.info(f"Removing date column '{col}' due to missing day '{day}' in Biometric data.")
+    #         del day_map[col]
 
-    if not day_map:
-        raise ValueError("No valid date mappings found between Keka and Biometric data.")
+    # if not day_map:
+    #     raise ValueError("No valid date mappings found between Keka and Biometric data.")
 
-    for employee in common_employees:
-        bio_absent_count = 0
-        bio_present_count = 0
+    for employee in keka_df.index:
+        # bio_absent_count = 0
+        # bio_present_count = 0
         employee_absent_dates = []
         CO = 0
 
         for keka_date, day in day_map.items():
             # Get attendance values for the current date
             keka_val = keka_df.at[employee, keka_date] if pd.notna(keka_df.at[employee, keka_date]) else None
-            biometric_val = biometrics_df.at[employee, day] if pd.notna(biometrics_df.at[employee, day]) else None
+            # biometric_val = biometrics_df.at[employee, day] if pd.notna(biometrics_df.at[employee, day]) else None
 
-            if biometric_val == 'P' and keka_val != 'WO':
-                bio_present_count += 1
+            # if biometric_val == 'P' and keka_val != 'WO':
+            #     bio_present_count += 1
 
-            if biometric_val == 'A' and keka_val != 'WO':
-                bio_absent_count += 1
+            # if biometric_val == 'A' and keka_val != 'WO':
+            #     bio_absent_count += 1
                 
             if keka_val == 'CO':
                 CO += 1    
@@ -128,23 +128,31 @@ def transformation(keka_path, indore_biometric_path, raipur_biometric_path, empl
             # Send email notification for absent dates
             dates_of_absence = ", ".join(employee_absent_dates)
             if employee in email_info_df.index:
+                employee_name = email_info_df.at[employee, 'Employee Name']
                 employee_email = email_info_df.at[employee, 'Email']
                 reporting_manager = keka_df.at[employee, 'Reporting Manager']
                 manager_email = None
 
                 if reporting_manager:
+                    
                     reporting_manager = reporting_manager.strip().upper()
-                    if reporting_manager in email_info_df.index:
-                        manager_email = email_info_df.at[reporting_manager, 'Email']
 
+                    # Search for the manager's email using the Employee Name column
+                    manager_row = email_info_df[email_info_df['Employee Name'].str.upper() == reporting_manager]
+
+                    if not manager_row.empty:
+                        manager_email = manager_row.iloc[0]['Email']  # Get the manager's email
+                    
+                print(employee_name)
+                print(manager_email)
                 send_email(
-                    name=employee,
+                    name=employee_name,
                     email=employee_email,
                     dates_of_absence=dates_of_absence,
                     manager_name=reporting_manager,
                     manager_email=manager_email
                 )
-                logging.info(f"Email sent to {employee}")
+                logging.info(f"Email sent to {employee_name} {employee}")
             else:
                 logging.info(f"{employee} email address does not exist in Email information file")
 
@@ -153,12 +161,12 @@ def transformation(keka_path, indore_biometric_path, raipur_biometric_path, empl
         keka_df.at[employee, 'WOH'] = keka_df.at[employee, 'WOH']
         keka_df.at[employee, 'Comp Offs Taken'] = CO
         keka_df.at[employee, 'Available Comp Offs'] = keka_df.at[employee, 'WOH'] - CO
-        keka_df.at[employee, 'Biometric Absent Count'] = bio_absent_count - (
-            keka_df.at[employee, 'Holidays'] +
-            keka_df.at[employee, 'Total Paid Leave'] +
-            keka_df.at[employee, 'Total Unpaid Leave']
-        )
-        keka_df.at[employee, 'Biometric Present Count'] = bio_present_count
+        # keka_df.at[employee, 'Biometric Absent Count'] = bio_absent_count - (
+        #     keka_df.at[employee, 'Holidays'] +
+        #     keka_df.at[employee, 'Total Paid Leave'] +
+        #     keka_df.at[employee, 'Total Unpaid Leave']
+        # )
+        # keka_df.at[employee, 'Biometric Present Count'] = bio_present_count
         
         keka_df.at[employee, 'Total Work Days'] = keka_df.at[employee, 'Total Days'] - (
             keka_df.at[employee, 'Weekly Offs'] +
@@ -173,7 +181,7 @@ def transformation(keka_path, indore_biometric_path, raipur_biometric_path, empl
     keka_df.reset_index(inplace=True)
     try:
         # Define columns to keep for the filtered sheet
-        columns_to_keep = ['Employee Name', 'Present Days', 'Absent Days', 'WFH', 'Total Paid Leave', 'Total Unpaid Leave', 'Holidays', 'Total Work Days', 'WOH', 'Comp Offs Taken', 'Available Comp Offs', 'Biometric Absent Count', 'Biometric Present Count']
+        columns_to_keep = ['Employee Name', 'Present Days', 'Absent Days', 'WFH', 'Total Paid Leave', 'Total Unpaid Leave', 'Holidays', 'Total Work Days', 'WOH', 'Comp Offs Taken', 'Available Comp Offs']
         filtered_df = keka_df[columns_to_keep]
 
         # Write data to an Excel file with multiple sheets
@@ -195,14 +203,14 @@ def transformation(keka_path, indore_biometric_path, raipur_biometric_path, empl
         ws[f"A{start_row}"] = "Duplicated Records for Biometric"
         ws[f"A{start_row}"].font = Font(bold=True, size=14)
 
-        # Write headers for bio_duplicates manually
-        for col_idx, col_name in enumerate(bio_duplicates.columns, start=1):
-            ws.cell(row=start_row + 2, column=col_idx, value=col_name).font = Font(bold=True)
+        # # Write headers for bio_duplicates manually
+        # for col_idx, col_name in enumerate(bio_duplicates.columns, start=1):
+        #     ws.cell(row=start_row + 2, column=col_idx, value=col_name).font = Font(bold=True)
 
-        # Write bio_duplicates data starting after the header row for Bio
-        for r_idx, row in enumerate(bio_duplicates.values, start=start_row + 3):
-            for c_idx, value in enumerate(row, start=1):
-                ws.cell(row=r_idx, column=c_idx, value=value)
+        # # Write bio_duplicates data starting after the header row for Bio
+        # for r_idx, row in enumerate(bio_duplicates.values, start=start_row + 3):
+        #     for c_idx, value in enumerate(row, start=1):
+        #         ws.cell(row=r_idx, column=c_idx, value=value)
 
         # Save the workbook
         wb.save(consolidated_file_path)
